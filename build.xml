@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project name="ServletHelloWorld" default="build">
+	<property environment="env"/>
+	
+	<!-- Set up the properties -->
+	<target name="setProperties" description="set up properties">
+		<property name="project-name"       		value="ServletHelloWorld"/>
+        <property name="main-class"  				value="demo.file.attribute.ChangeFileLastModifiedDemo"/>
+        <property name="base-dir"           		value="bin"/>
+		<property name="deploy-dir"          	 	value="deploy"/>
+        <property name="javadoc-dir"       			value="doc"/>
+		<property name="lib-dir"	       			value="lib"/>
+		<property name="ref-dir"       				value="ref"/>
+		<property name="resource-dir"       		value="resource"/>
+		<property name="src-dir"       				value="src"/>
+	</target>
+
+	<!-- Necessary checking -->
+	<target name="checkjava" unless="env.JAVA_HOME" depends="setProperties">
+		<fail message="JAVA_HOME must be set!"/>
+	</target>
+	<target name="checktomcat" unless="env.CATALINA_HOME" depends="checkjava">
+		<fail message="CATALINA_HOME must be set!"/>
+	</target>
+	
+	<!-- Clean up the project -->
+    <target name="clean" depends="setProperties">
+        <delete>
+    		<fileset dir="${base-dir}" includes="**/*.class"/>
+    	</delete>
+    	<delete>
+			<fileset dir="${deploy-dir}" includes="**/*.jar"/>
+		</delete>
+    	<delete>
+			<fileset dir="${javadoc-dir}" includes="**/*.*"/>
+		</delete>
+    </target>
+	
+    <!-- Generate java document -->
+    <target name="doc" depends="checktomcat">
+        <javadoc destdir="${javadoc-dir}">
+            <fileset dir="${src-dir}" casesensitive="yes">
+            	<include name="**/*.java"/>
+            </fileset>
+        </javadoc>
+    </target>
+	
+	<!-- Create necessary directory & classpath-->
+    <target name="prepare" depends="checktomcat">
+        <mkdir dir="${base-dir}"/>
+    	<mkdir dir="${deploy-dir}"/>
+    	<mkdir dir="${javadoc-dir}"/>
+    	<mkdir dir="${lib-dir}"/>
+    	<mkdir dir="${ref-dir}"/>
+    	<mkdir dir="${resource-dir}"/>
+		<property name="servlet-api.jar"       		value="${env.CATALINA_HOME}/lib/servlet-api.jar"/>
+		<property name="jsp-api.jar"       			value="${env.CATALINA_HOME}/lib/jsp-api.jar"/>
+    </target> 
+
+	<!-- Compile source files -->
+    <target name="compile" depends="prepare">
+		<javac srcdir="${src-dir}" destdir="${base-dir}" includeantruntime="false" encoding="utf-8">
+			<classpath location="${servlet-api.jar}"/>
+			<classpath location="${jsp-api.jar}"/>  
+		</javac>
+    </target>
+	
+    <!-- create the jar -->
+    <target name="build" depends="compile">
+        <copy todir="${env.CATALINA_HOME}/webapps/myapp/WEB-INF/classes">
+            <fileset dir="${base-dir}"/>
+        </copy>
+    </target>
+
+	<!-- Help menu -->
+	<target name="help" description="help information" depends="checktomcat">
+		<echo>Set reloadble in ${env.CATALINA_HOME}/conf/context.xml:</echo>
+		<echo><![CDATA[<Context reloadable="true">]]></echo>
+		<echo>Clear cache:</echo>
+		<echo>https://support.google.com/chrome/answer/95582?hl=zh-Hant</echo>
+		<echo>Reference: http://sun.cis.scu.edu.tw/~nms9115/articles/java/WebAppTutor/ServletPrimer/ServletPrimer.htm</echo>
+	</target>
+</project>
